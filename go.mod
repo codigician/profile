@@ -1,4 +1,4 @@
-module github.com/codigician/submit
+module github.com/codigician/profile
 
 go 1.17
 
