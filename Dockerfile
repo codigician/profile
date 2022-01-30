@@ -17,6 +17,6 @@ WORKDIR /
 
 COPY --from=0 /app/profile-api ./
 
-EXPOSE 8081
+EXPOSE 8082
 
 CMD ["./profile-api"]

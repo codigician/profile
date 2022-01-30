@@ -45,15 +45,18 @@ func (p *ProfileHandler) RegisterRoutes(router *echo.Echo) {
 func (p *ProfileHandler) GetComplete(c echo.Context) error {
 	id := c.Param("id")
 
-	start, err := ParseTime(c.QueryParam("start"))
+	startTimeString := c.QueryParam("start")
+	endTimeString := c.QueryParam("end")
+
+	start, err := ParseTime(startTimeString)
 	if err != nil {
-		log.Printf("parse time is not valid: %v\n", err)
+		log.Printf("start time %s is not valid: %v\n", startTimeString, err)
 		return echo.NewHTTPError(http.StatusBadRequest, "start time is not valid")
 	}
 
-	end, err := ParseTime(c.QueryParam("end"))
+	end, err := ParseTime(endTimeString)
 	if err != nil {
-		log.Printf("end time is not valid: %v\n", err)
+		log.Printf("end time %s is not valid: %v\n", endTimeString, err)
 		return echo.NewHTTPError(http.StatusBadRequest, "end time is not valid")
 	}
 

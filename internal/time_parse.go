@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +21,6 @@ func ParseTime(t string) (time.Time, error) {
 	}
 
 	month, err := strconv.Atoi(ymd[1])
-	log.Println(month)
 	if err != nil || month < 1 || month > 12 {
 		return time.Time{}, errors.New("invalid month")
 	}

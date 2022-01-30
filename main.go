@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/codigician/profile/internal"
@@ -11,12 +12,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const _address = ":8081"
+const _address = ":8082"
 
 func main() {
 	echoServer := echo.New()
 
 	aboutMongoRepository := aboutmongo.New("mongodb://localhost:27017")
+	if err := aboutMongoRepository.Connect(context.Background()); err != nil {
+		log.Fatalf("about mongo repository: %v\n", err)
+	}
+
 	aboutService := about.NewService(aboutMongoRepository)
 	submissionService := submission.NewService()
 	analyticsService := analytics.NewService()
