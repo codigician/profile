@@ -37,6 +37,21 @@ func (m *MockAboutService) EXPECT() *MockAboutServiceMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockAboutService) Create(ctx context.Context, personal about.Personal) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, personal)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockAboutServiceMockRecorder) Create(ctx, personal interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAboutService)(nil).Create), ctx, personal)
+}
+
 // Get mocks base method.
 func (m *MockAboutService) Get(ctx context.Context, id string) (*about.About, error) {
 	m.ctrl.T.Helper()

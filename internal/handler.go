@@ -13,6 +13,7 @@ import (
 
 type AboutService interface {
 	Get(ctx context.Context, id string) (*about.About, error)
+	Create(ctx context.Context, personal about.Personal) (string, error)
 }
 
 type SubmissionService interface {
@@ -38,7 +39,22 @@ func NewProfileHandler(aboutService AboutService, submissionService SubmissionSe
 
 // RegisterRoutes ...
 func (p *ProfileHandler) RegisterRoutes(router *echo.Echo) {
-	router.GET("/:id", p.GetComplete)
+	router.GET(":id", p.GetComplete)
+	router.POST("", p.Create)
+}
+
+func (p *ProfileHandler) Create(c echo.Context) error {
+	var req CreateProfileReq
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	id, err := p.aboutService.Create(c.Request().Context(), req.toPersonal())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, CreateProfileRes{id})
 }
 
 // GetComplete returns the detailed profile information of the current user

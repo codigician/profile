@@ -7,6 +7,28 @@ import (
 	"github.com/codigician/profile/internal/submission"
 )
 
+type CreateProfileReq struct {
+	Firstname   string `json:"firstname,omitempty"`
+	Lastname    string `json:"lastname,omitempty"`
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Country     string `json:"country,omitempty"`
+}
+
+func (p *CreateProfileReq) toPersonal() about.Personal {
+	return about.Personal{
+		Firstname:   p.Firstname,
+		Lastname:    p.Lastname,
+		Email:       p.Email,
+		PhoneNumber: p.PhoneNumber,
+		Country:     p.Country,
+	}
+}
+
+type CreateProfileRes struct {
+	ID string `json:"id"`
+}
+
 // ProfileRes response of the complete profile information
 type ProfileRes struct {
 	About AboutRes `json:"about"`

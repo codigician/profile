@@ -1,6 +1,8 @@
 package internal_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,9 +43,11 @@ func TestGetComplete(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 		},
 		{
-			scenario:           "given no id in path it should return 404",
+			// it will return 405 because when you don't provide id
+			// it will be the same with create path
+			scenario:           "given no id in path it should return 405",
 			givenRawURLPath:    "/?start=2020-01-01&end=2021-01-01",
-			expectedStatusCode: http.StatusNotFound,
+			expectedStatusCode: http.StatusMethodNotAllowed,
 		},
 		{
 			scenario:           "given invalid start time, return 400",
@@ -87,6 +91,53 @@ func TestGetComplete(t *testing.T) {
 				AnyTimes()
 
 			res, _ := http.Get(srv.URL + tC.givenRawURLPath)
+
+			assert.Equal(t, tC.expectedStatusCode, res.StatusCode)
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	mockAboutService := mocks.NewMockAboutService(gomock.NewController(t))
+
+	srv := startTestServerWithProfileHandler(mockAboutService, nil)
+	defer srv.Close()
+
+	testCases := []struct {
+		scenario           string
+		givenRequest       interface{}
+		mockErr            error
+		expectedPersonal   about.Personal
+		expectedStatusCode int
+	}{
+		{
+			scenario:           "given invalid request body return 400",
+			givenRequest:       "invalid body",
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			scenario:           "given valid request body service returns error return 500",
+			givenRequest:       internal.CreateProfileReq{Firstname: "kaan", Email: "gigi@mail.com"},
+			mockErr:            assert.AnError,
+			expectedPersonal:   about.Personal{Firstname: "kaan", Email: "gigi@mail.com"},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			scenario:           "given valid request body service returns success return 201",
+			givenRequest:       internal.CreateProfileReq{Firstname: "yuksel", Email: "bobo@gmail.com"},
+			expectedPersonal:   about.Personal{Firstname: "yuksel", Email: "bobo@gmail.com"},
+			expectedStatusCode: http.StatusCreated,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.scenario, func(t *testing.T) {
+			mockAboutService.EXPECT().
+				Create(gomock.Any(), tC.expectedPersonal).
+				Return("", tC.mockErr).
+				AnyTimes()
+
+			bytesReq, _ := json.Marshal(tC.givenRequest)
+			res, _ := http.Post(srv.URL, "application/json", bytes.NewBuffer(bytesReq))
 
 			assert.Equal(t, tC.expectedStatusCode, res.StatusCode)
 		})
