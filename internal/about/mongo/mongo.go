@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/codigician/profile/internal/about"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,11 +18,33 @@ func New(uri string) *Mongo {
 	return &Mongo{uri: uri}
 }
 
-func (m *Mongo) Save(ctx context.Context, a *about.About) error {
-	res, err := m.pa().InsertOne(ctx, FromAbout(a))
+func (m *Mongo) Save(ctx context.Context, a *about.About) (string, error) {
+	res, err := m.pa().InsertOne(ctx, fromAbout(a, primitive.NewObjectID()))
 	id, _ := res.InsertedID.(primitive.ObjectID)
-	fmt.Println(id) // TODO:
+	return id.Hex(), err
+}
+
+func (m *Mongo) Get(ctx context.Context, id string) (*about.About, error) {
+	oid, _ := primitive.ObjectIDFromHex(id)
+
+	res := m.pa().FindOne(ctx, primitive.M{"_id": oid})
+
+	var a About
+	err := res.Decode(&a)
+	return a.to(), err
+}
+
+// TOOD: maybe put email outside of the nested struct
+// to make it easier to query and index
+func (m *Mongo) Update(ctx context.Context, id string, a *about.About) error {
+	oid, _ := primitive.ObjectIDFromHex(id)
+	filter := primitive.M{"_id": oid}
+	_, err := m.pa().UpdateOne(ctx, filter, primitive.M{"$set": fromAbout(a, oid)})
 	return err
+}
+
+func (m *Mongo) pa() *mongo.Collection {
+	return m.client.Database("profile").Collection("about")
 }
 
 func (m *Mongo) Connect(ctx context.Context) error {
@@ -34,8 +55,4 @@ func (m *Mongo) Connect(ctx context.Context) error {
 
 func (m *Mongo) Disconnect(ctx context.Context) error {
 	return m.client.Disconnect(ctx)
-}
-
-func (m *Mongo) pa() *mongo.Collection {
-	return m.client.Database("profile").Collection("about")
 }

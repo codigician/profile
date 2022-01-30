@@ -25,6 +25,8 @@ type Personal struct {
 	Country     string `bson:"country"`
 }
 
+type Educations []Education
+
 type Education struct {
 	School      string    `bson:"school"`
 	Program     string    `bson:"program"`
@@ -35,6 +37,8 @@ type Education struct {
 	EndedAt     time.Time `bson:"ended_at"`
 }
 
+type WorkHistories []WorkHistory
+
 type WorkHistory struct {
 	Company     string    `bson:"company"`
 	Role        string    `bson:"role"`
@@ -44,14 +48,16 @@ type WorkHistory struct {
 	EndedAt     time.Time `bson:"ended_at"`
 }
 
+type Websites []Website
+
 type Website struct {
 	Title string `bson:"title"`
 	URL   string `bson:"url"`
 }
 
-func FromAbout(a *about.About) About {
+func fromAbout(a *about.About, id primitive.ObjectID) About {
 	return About{
-		ID:       primitive.NewObjectID(),
+		ID:       id,
 		Headline: a.Headline,
 		Me:       a.Me,
 		Personal: Personal{
@@ -61,13 +67,13 @@ func FromAbout(a *about.About) About {
 			PhoneNumber: a.Personal.PhoneNumber,
 			Country:     a.Personal.Country,
 		},
-		Education:   FromEducation(a.Education),
-		WorkHistory: FromWorkHistory(a.WorkHistory),
-		Websites:    FromWebsites(a.Websites),
+		Education:   fromEducation(a.Education),
+		WorkHistory: fromWorkHistory(a.WorkHistory),
+		Websites:    fromWebsites(a.Websites),
 	}
 }
 
-func FromEducation(e []about.Education) (education []Education) {
+func fromEducation(e []about.Education) (education []Education) {
 	for idx := range e {
 		education = append(education, Education{
 			School:      e[idx].School,
@@ -83,7 +89,7 @@ func FromEducation(e []about.Education) (education []Education) {
 	return education
 }
 
-func FromWorkHistory(w []about.WorkHistory) (workHistory []WorkHistory) {
+func fromWorkHistory(w []about.WorkHistory) (workHistory []WorkHistory) {
 	for idx := range w {
 		workHistory = append(workHistory, WorkHistory{
 			Company:     w[idx].Company,
@@ -98,9 +104,75 @@ func FromWorkHistory(w []about.WorkHistory) (workHistory []WorkHistory) {
 	return workHistory
 }
 
-func FromWebsites(w []about.Website) (websites []Website) {
+func fromWebsites(w []about.Website) (websites []Website) {
 	for idx := range w {
 		websites = append(websites, Website{
+			Title: w[idx].Title,
+			URL:   w[idx].URL,
+		})
+	}
+
+	return websites
+}
+
+func (a *About) to() *about.About {
+	return &about.About{
+		Headline:    a.Headline,
+		Me:          a.Me,
+		Personal:    a.Personal.to(),
+		Education:   Educations(a.Education).to(),
+		WorkHistory: WorkHistories(a.WorkHistory).to(),
+		Websites:    Websites(a.Websites).to(),
+	}
+}
+
+func (p Personal) to() about.Personal {
+	return about.Personal{
+		Firstname:   p.Firstname,
+		Lastname:    p.Lastname,
+		Email:       p.Email,
+		PhoneNumber: p.PhoneNumber,
+		Country:     p.Country,
+	}
+}
+
+func (e Educations) to() []about.Education {
+	var education []about.Education
+	for idx := range e {
+		education = append(education, about.Education{
+			School:      e[idx].School,
+			Program:     e[idx].Program,
+			Degree:      e[idx].Degree,
+			Description: e[idx].Description,
+			Current:     e[idx].Current,
+			StartedAt:   e[idx].StartedAt,
+			EndedAt:     e[idx].EndedAt,
+		})
+	}
+
+	return education
+}
+
+func (w WorkHistories) to() []about.WorkHistory {
+	var workHistory []about.WorkHistory
+	for idx := range w {
+		workHistory = append(workHistory, about.WorkHistory{
+			Company:     w[idx].Company,
+			Role:        w[idx].Role,
+			Description: w[idx].Description,
+			Current:     w[idx].Current,
+			StartedAt:   w[idx].StartedAt,
+			EndedAt:     w[idx].EndedAt,
+		})
+	}
+
+	return workHistory
+}
+
+func (w Websites) to() []about.Website {
+	var websites []about.Website
+	for idx := range w {
+		websites = append(websites, about.Website{
 			Title: w[idx].Title,
 			URL:   w[idx].URL,
 		})

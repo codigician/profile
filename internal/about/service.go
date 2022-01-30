@@ -2,11 +2,12 @@ package about
 
 import (
 	"context"
-	"time"
 )
 
 type Repository interface {
-	Save(ctx context.Context, about *About) error
+	Get(ctx context.Context, id string) (*About, error)
+	Save(ctx context.Context, about *About) (string, error)
+	Update(ctx context.Context, email string, about *About) error
 }
 
 type Service struct {
@@ -18,53 +19,14 @@ func NewService(repository Repository) *Service {
 }
 
 func (s *Service) Get(ctx context.Context, id string) (*About, error) {
-	return &About{
-		Headline: "Software Engineer",
-		Me:       "Its about me",
-		Personal: Personal{
-			Firstname:   "Hikmet Ataberk",
-			Lastname:    "Canitez",
-			Email:       "hiko@gmail.com",
-			PhoneNumber: "+905335555555",
-			Country:     "Turkey",
-		},
-		Education: []Education{
-			{
-				School:    "Ege University",
-				Program:   "Computer Science",
-				Degree:    "Bachelor",
-				Current:   false,
-				StartedAt: time.Time{},
-				EndedAt:   time.Time{},
-			},
-			{
-				School:  "Dokuz Eylul University",
-				Degree:  "Bachelor",
-				Program: "Computer Science",
-			},
-		},
-		WorkHistory: []WorkHistory{
-			{
-				Company:     "Codigician",
-				Role:        "Software Engineer",
-				Description: "",
-				Current:     true,
-			},
-		},
-		Websites: []Website{
-			{
-				Title: "Github",
-				URL:   "https://github.com/codigician",
-			},
-		},
-	}, nil
+	return s.repository.Get(ctx, id)
 }
 
-func (s *Service) Update(ctx context.Context, id string, about About) error {
-	return nil
+func (s *Service) Update(ctx context.Context, email string, about About) error {
+	return s.repository.Update(ctx, email, &about)
 }
 
-func (s *Service) Create(ctx context.Context, personal Personal) error {
+func (s *Service) Create(ctx context.Context, personal Personal) (string, error) {
 	about := About{Personal: personal}
 	return s.repository.Save(ctx, &about)
 }
