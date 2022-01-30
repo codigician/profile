@@ -16,6 +16,7 @@ type (
 	}
 
 	Event struct {
+		UserID             string    `json:"user_id"`
 		QuestionID         string    `json:"question_id"`
 		QuestionTitle      string    `json:"question_title"`
 		QuestionDifficulty string    `json:"question_difficulty"`
