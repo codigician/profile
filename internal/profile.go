@@ -1,9 +1,10 @@
 package internal
 
 import (
+	"time"
+
 	"github.com/codigician/profile/internal/about"
 	"github.com/codigician/profile/internal/submission"
-	"time"
 )
 
 // ProfileRes response of the complete profile information
@@ -61,7 +62,7 @@ type SubmissionRes struct {
 	At                 time.Time `json:"at"`
 }
 
-func FromEducation(education []about.Education) (res []EducationRes) {
+func fromEducation(education []about.Education) (res []EducationRes) {
 	for idx := range education {
 		res = append(res, EducationRes{
 			School:      education[idx].School,
@@ -76,7 +77,7 @@ func FromEducation(education []about.Education) (res []EducationRes) {
 	return res
 }
 
-func FromWorkHistory(workHistory []about.WorkHistory) (res []WorkHistoryRes) {
+func fromWorkHistory(workHistory []about.WorkHistory) (res []WorkHistoryRes) {
 	for idx := range workHistory {
 		res = append(res, WorkHistoryRes{
 			Company:     workHistory[idx].Company,
@@ -90,7 +91,7 @@ func FromWorkHistory(workHistory []about.WorkHistory) (res []WorkHistoryRes) {
 	return res
 }
 
-func FromWebsites(websites []about.Website) (res []WebsiteRes) {
+func fromWebsites(websites []about.Website) (res []WebsiteRes) {
 	for idx := range websites {
 		res = append(res, WebsiteRes{
 			Title: websites[idx].Title,
@@ -101,7 +102,7 @@ func FromWebsites(websites []about.Website) (res []WebsiteRes) {
 	return res
 }
 
-func FromSubmissions(submissions []submission.Submission) (res []SubmissionRes) {
+func fromSubmissions(submissions []submission.Submission) (res []SubmissionRes) {
 	for idx := range submissions {
 		res = append(res, SubmissionRes{
 			QuestionID:         submissions[idx].Question.ID,

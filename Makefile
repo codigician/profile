@@ -20,3 +20,4 @@ lint:
 
 mockgen:
 	mockgen -destination=internal/mocks/about/mock_repository.go -package mocks -source=internal/about/service.go
+	mockgen -destination=internal/mocks/mocks_profile_handler.go -package mocks -source=internal/handler.go

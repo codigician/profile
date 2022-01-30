@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -37,27 +38,34 @@ func NewProfileHandler(aboutService AboutService, submissionService SubmissionSe
 
 // RegisterRoutes ...
 func (p *ProfileHandler) RegisterRoutes(router *echo.Echo) {
-	router.GET("/", p.GetComplete)
+	router.GET("/:id", p.GetComplete)
 }
 
 // GetComplete returns the detailed profile information of the current user
 func (p *ProfileHandler) GetComplete(c echo.Context) error {
-	//bearerAuthorization := c.Request().Header.Get("Authorization")
-	//splitBearerToken := strings.Split(bearerAuthorization, " ")
-	//if len(splitBearerToken) != 2 {
-	//	return echo.ErrBadRequest
-	//}
+	id := c.Param("id")
 
-	id := "5"
-	start := time.Now()
-	end := time.Now().Add(5 * time.Hour)
+	start, err := ParseTime(c.QueryParam("start"))
+	if err != nil {
+		log.Printf("parse time is not valid: %v\n", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "start time is not valid")
+	}
+
+	end, err := ParseTime(c.QueryParam("end"))
+	if err != nil {
+		log.Printf("end time is not valid: %v\n", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "end time is not valid")
+	}
+
 	submissions, err := p.submissionService.FindAllBetween(c.Request().Context(), start, end)
 	if err != nil {
+		log.Printf("find all between: %v\n", err)
 		return err
 	}
 
 	aboutMe, err := p.aboutService.Get(c.Request().Context(), id)
 	if err != nil {
+		log.Printf("get about me: %v\n", err)
 		return err
 	}
 
@@ -71,16 +79,16 @@ func (p *ProfileHandler) GetComplete(c echo.Context) error {
 			PhoneNumber: aboutMe.Personal.PhoneNumber,
 			Country:     aboutMe.Personal.Country,
 		},
-		Websites:    FromWebsites(aboutMe.Websites),
-		Education:   FromEducation(aboutMe.Education),
-		WorkHistory: FromWorkHistory(aboutMe.WorkHistory),
-		Submissions: FromSubmissions(submissions),
+		Websites:    fromWebsites(aboutMe.Websites),
+		Education:   fromEducation(aboutMe.Education),
+		WorkHistory: fromWorkHistory(aboutMe.WorkHistory),
+		Submissions: fromSubmissions(submissions),
 	})
 }
 
 // GetPublicInformation returns the detailed public information of a given user
+// fetch public information using about service
 func (p *ProfileHandler) GetPublicInformation() {
-	// fetch public information using about service
 }
 
 // GetSubmitHistory of the profile in given timespan
