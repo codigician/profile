@@ -14,7 +14,7 @@ type AboutService interface {
 }
 
 type SubmissionService interface {
-	GetAllBetween(ctx context.Context, start, end time.Time) ([]submission.Submission, error)
+	FindAllBetween(ctx context.Context, start, end time.Time) ([]submission.Submission, error)
 }
 
 type AnalyticsService interface {
@@ -26,9 +26,17 @@ type ProfileHandler struct {
 	analyticsService  AnalyticsService
 }
 
-// RegisterRoutes ...
-func (p *ProfileHandler) RegisterRoutes() {
+func NewProfileHandler(aboutService AboutService, submissionService SubmissionService, analyticsService AnalyticsService) *ProfileHandler {
+	return &ProfileHandler{
+		aboutService:      aboutService,
+		submissionService: submissionService,
+		analyticsService:  analyticsService,
+	}
+}
 
+// RegisterRoutes ...
+func (p *ProfileHandler) RegisterRoutes(router *echo.Echo) {
+	router.GET("/", p.GetComplete)
 }
 
 // GetComplete returns the detailed profile information of the current user
@@ -42,7 +50,7 @@ func (p *ProfileHandler) GetComplete(c echo.Context) error {
 	id := "5"
 	start := time.Now()
 	end := time.Now().Add(5 * time.Hour)
-	submissions, err := p.submissionService.GetAllBetween(c.Request().Context(), start, end)
+	submissions, err := p.submissionService.FindAllBetween(c.Request().Context(), start, end)
 	if err != nil {
 		return err
 	}
@@ -71,7 +79,7 @@ func (p *ProfileHandler) GetComplete(c echo.Context) error {
 
 // GetPublicInformation returns the detailed public information of a given user
 func (p *ProfileHandler) GetPublicInformation() {
-
+	// fetch public information using about service
 }
 
 // GetSubmitHistory of the profile in given timespan
