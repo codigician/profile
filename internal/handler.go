@@ -2,11 +2,12 @@ package internal
 
 import (
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/codigician/profile/internal/about"
 	"github.com/codigician/profile/internal/submission"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"time"
 )
 
 type AboutService interface {
