@@ -67,6 +67,20 @@ func (mr *MockAboutServiceMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockAboutService)(nil).Get), ctx, id)
 }
 
+// Update mocks base method.
+func (m *MockAboutService) Update(ctx context.Context, id string, a about.About) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, id, a)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockAboutServiceMockRecorder) Update(ctx, id, a interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAboutService)(nil).Update), ctx, id, a)
+}
+
 // MockSubmissionService is a mock of SubmissionService interface.
 type MockSubmissionService struct {
 	ctrl     *gomock.Controller

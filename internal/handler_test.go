@@ -144,6 +144,77 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestUpdate(t *testing.T) {
+	mockAboutService := mocks.NewMockAboutService(gomock.NewController(t))
+
+	srv := startTestServerWithProfileHandler(mockAboutService, nil)
+	defer srv.Close()
+
+	testCases := []struct {
+		scenario           string
+		givenID            string
+		givenRequest       interface{}
+		mockErr            error
+		expectedAbout      about.About
+		expectedStatusCode int
+	}{
+		{
+			scenario:           "given no id in path it should return 405",
+			expectedStatusCode: http.StatusMethodNotAllowed,
+		},
+		{
+			scenario:           "given valid id and bad request return 400",
+			givenID:            "3d",
+			givenRequest:       "invalid request",
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			scenario:           "given valid id and valid request when service fails return 500",
+			givenID:            "5id",
+			givenRequest:       internal.UpdateProfileReq{About: internal.About{Headline: "headline"}},
+			mockErr:            assert.AnError,
+			expectedAbout:      about.About{Headline: "headline"},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			scenario: "given valid id and valid request when service succeeds return 200",
+			givenID:  "913",
+			givenRequest: internal.UpdateProfileReq{
+				About:       internal.About{Headline: "headline", Me: "me", Email: "aa@mail.com"},
+				Websites:    []internal.Website{{Title: "codigician", URL: "www.codigician.com"}},
+				Education:   []internal.Education{{School: "Skoll"}},
+				WorkHistory: []internal.WorkHistory{{Company: "Codigician"}},
+			},
+			expectedAbout: about.About{
+				Headline:    "headline",
+				Me:          "me",
+				Personal:    about.Personal{Email: "aa@mail.com"},
+				Education:   []about.Education{{School: "Skoll"}},
+				WorkHistory: []about.WorkHistory{{Company: "Codigician"}},
+				Websites:    []about.Website{{Title: "codigician", URL: "www.codigician.com"}},
+			},
+			expectedStatusCode: http.StatusNoContent,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.scenario, func(t *testing.T) {
+			mockAboutService.EXPECT().
+				Update(gomock.Any(), tC.givenID, tC.expectedAbout).
+				Return(tC.mockErr).
+				AnyTimes()
+
+			bytesReq, _ := json.Marshal(tC.givenRequest)
+			req, _ := http.NewRequest(http.MethodPut, srv.URL+"/"+tC.givenID, bytes.NewBuffer(bytesReq))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
+			res, err := http.DefaultClient.Do(req)
+
+			assert.Nil(t, err)
+			assert.Equal(t, tC.expectedStatusCode, res.StatusCode)
+		})
+	}
+}
+
 func startTestServerWithProfileHandler(aboutService internal.AboutService, submissionService internal.SubmissionService) *httptest.Server {
 	e := echo.New()
 

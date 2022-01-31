@@ -14,6 +14,7 @@ import (
 type AboutService interface {
 	Get(ctx context.Context, id string) (*about.About, error)
 	Create(ctx context.Context, personal about.Personal) (string, error)
+	Update(ctx context.Context, id string, a about.About) error
 }
 
 type SubmissionService interface {
@@ -41,20 +42,42 @@ func NewProfileHandler(aboutService AboutService, submissionService SubmissionSe
 func (p *ProfileHandler) RegisterRoutes(router *echo.Echo) {
 	router.GET(":id", p.GetComplete)
 	router.POST("", p.Create)
+	router.PUT(":id", p.Update)
 }
 
+// Create create simple profile information
 func (p *ProfileHandler) Create(c echo.Context) error {
 	var req CreateProfileReq
 	if err := c.Bind(&req); err != nil {
+		log.Printf("create profile bind: %v\n", err)
 		return err
 	}
 
 	id, err := p.aboutService.Create(c.Request().Context(), req.toPersonal())
 	if err != nil {
+		log.Printf("create about me: %v\n", err)
 		return err
 	}
 
 	return c.JSON(http.StatusCreated, CreateProfileRes{id})
+}
+
+// Update update the profile information
+func (p *ProfileHandler) Update(c echo.Context) error {
+	id := c.Param("id")
+
+	var req UpdateProfileReq
+	if err := c.Bind(&req); err != nil {
+		log.Printf("update profile bind: %v\n", err)
+		return err
+	}
+
+	if err := p.aboutService.Update(c.Request().Context(), id, req.toAbout()); err != nil {
+		log.Printf("update about me: %v\n", err)
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 // GetComplete returns the detailed profile information of the current user
@@ -89,7 +112,7 @@ func (p *ProfileHandler) GetComplete(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, ProfileRes{
-		About: AboutRes{
+		About: About{
 			Headline:    aboutMe.Headline,
 			Me:          aboutMe.Me,
 			Firstname:   aboutMe.Personal.Firstname,
