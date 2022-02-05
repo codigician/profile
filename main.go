@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/codigician/profile/internal"
 	"github.com/codigician/profile/internal/about"
@@ -17,7 +19,9 @@ const _address = ":8082"
 func main() {
 	echoServer := echo.New()
 
-	aboutMongoRepository := aboutmongo.New("mongodb://localhost:27017")
+	mongoURL := fmt.Sprintf("mongodb://%s", os.Getenv("MONGO_DB_URL"))
+
+	aboutMongoRepository := aboutmongo.New(mongoURL)
 	if err := aboutMongoRepository.Connect(context.Background()); err != nil {
 		log.Fatalf("about mongo repository: %v\n", err)
 	}
