@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -19,8 +18,7 @@ const _address = ":8082"
 func main() {
 	echoServer := echo.New()
 
-	mongoURL := fmt.Sprintf("mongodb://%s", os.Getenv("MONGO_DB_URL"))
-
+	mongoURL := os.Getenv("MONGO_DB_URL")
 	aboutMongoRepository := aboutmongo.New(mongoURL)
 	if err := aboutMongoRepository.Connect(context.Background()); err != nil {
 		log.Fatalf("about mongo repository: %v\n", err)
